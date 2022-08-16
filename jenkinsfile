@@ -1,0 +1,29 @@
+pipeline{
+    agent any
+    tools {
+        maven 'Maven'
+    }
+    stages {
+        stage('Build Maven') {
+            steps {
+                checkout([$class: 'GitSCM', branches: [[name: '*/master']], extensions: [], userRemoteConfigs: [[credentialsId: '58499410-80f0-4ac3-ab7b-f2ee11a56c18', url: 'https://github.com/SSuddapalli/docker.git']]])
+                bat "mvn -Dmaven.test.failure.ignore=true clean package"
+            }
+        }
+         stage('Build Docker Image') {
+            steps {
+                script {
+                 bat 'docker build -t ssuddapalli/my-app-1.0 .'
+                }
+            }
+        }
+          stage('Deploy Docker Image') {
+            steps {
+                script {
+                   bat 'docker login -u ssuddapalli -p dckr_pat_ZwRXHGg340uSHZBoyzjVGlq7Swo'
+                     bat 'docker push ssuddapalli/my-app-1.0'
+                }
+            }
+          }
+    }
+}
